@@ -1,4 +1,4 @@
 package micromobility.payment;
 
-public class Payment {
+public interface Payment {
 }
