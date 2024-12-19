@@ -56,10 +56,14 @@ public class JourneyRealizeHandler {
 
         try {
             // Decodificar el QR para obtener el VehicleID
-            VehicleID vehicleID = qrDecoder.getVehicleID(qrImage); // Ahora usa BufferedImage
+            VehicleID vehicleID = qrDecoder.getVehicleID(qrImage); // Puede lanzar CorruptedImgException
+
+            if (vehicleID == null) {
+                throw new InvalidPairingArgsException("VehicleID no puede ser nulo o inválido.");
+            }
 
             // Obtener el vehículo desde el servidor
-            currentVehicle = server.getVehicleByID(vehicleID);
+            currentVehicle = server.getVehicleByID(vehicleID); // Puede lanzar InvalidPairingArgsException
 
             // Verificar si el vehículo está disponible
             if (currentVehicle.getState() != PMVState.Available) {
@@ -83,6 +87,7 @@ public class JourneyRealizeHandler {
             throw new ProceduralException("Error en la secuencia procedimental: " + e.getMessage());
         }
     }
+
 
     /**
      * Finaliza el trayecto actual y realiza las actualizaciones necesarias.
