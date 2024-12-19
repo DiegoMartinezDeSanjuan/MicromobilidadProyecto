@@ -251,19 +251,83 @@ public class JourneyRealizeHandler {
      * @param date Fecha y hora de finalización.
      */
     private void calculateValues(GeographicPoint gP, LocalDateTime date) {
-        // Cálculo de distancia, duración y velocidad promedio
+        if (currentJourney == null || !currentJourney.isInProgress()) {
+            throw new IllegalStateException("No hay un trayecto en curso para calcular valores.");
+        }
+
+        // Calcular duración
+        LocalDateTime startDateTime = LocalDateTime.of(
+                currentJourney.getStartDate(),
+                currentJourney.getStartTime()
+        );
+        int duration = (int) java.time.Duration.between(startDateTime, date).toMinutes();
+        currentJourney.setDuration(duration);
+
+        // Calcular distancia
+        GeographicPoint origin = currentJourney.getOriginPoint();
+        float distance = calculateDistance(origin, gP);
+        currentJourney.setDistance(distance);
+
+        // Calcular velocidad promedio
+        float avgSpeed = duration > 0 ? (distance / duration) * 60 : 0;
+        currentJourney.setAverageSpeed(avgSpeed);
+
+        System.out.println("Valores calculados: duración = " + duration + " min, distancia = " + distance +
+                " km, velocidad promedio = " + avgSpeed + " km/h.");
+    }
+
+    /**
+     * Calcula la distancia entre dos puntos geográficos.
+     *
+     * @param start Punto de inicio.
+     * @param end   Punto de finalización.
+     * @return Distancia en kilómetros.
+     */
+    private float calculateDistance(GeographicPoint start, GeographicPoint end) {
+        double earthRadius = 6371; // Radio de la Tierra en km
+
+        double latDiff = Math.toRadians(end.getLatitude() - start.getLatitude());
+        double lonDiff = Math.toRadians(end.getLongitude() - start.getLongitude());
+
+        double a = Math.sin(latDiff / 2) * Math.sin(latDiff / 2) +
+                Math.cos(Math.toRadians(start.getLatitude())) * Math.cos(Math.toRadians(end.getLatitude())) *
+                        Math.sin(lonDiff / 2) * Math.sin(lonDiff / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return (float) (earthRadius * c);
     }
 
     /**
      * Calcula el importe correspondiente al trayecto.
-     *
-     * @param dis   Distancia recorrida.
-     * @param dur   Duración del trayecto.
-     * @param avSp  Velocidad promedio.
      * @param date  Fecha de finalización.
      */
-    private void calculateImport(float dis, int dur, float avSp, LocalDateTime date) {
-        // Cálculo del importe del servicio
+    private void calculateImport(LocalDateTime date) {
+        if (currentJourney == null || !currentJourney.isInProgress()) {
+            throw new IllegalStateException("No hay un trayecto en curso para calcular el importe.");
+        }
+
+        // Validar que los valores necesarios están presentes
+        float distance = currentJourney.getDistance();
+        float duration = currentJourney.getDuration();
+        float avgSpeed = currentJourney.getAverageSpeed();
+
+        if (distance <= 0 || duration <= 0) {
+            throw new IllegalArgumentException("La distancia y la duración deben ser mayores a 0 para calcular el importe.");
+        }
+
+        // Tarifas base
+        float baseRate = 0.5f; // Tarifa base por km
+        float timeRate = 0.1f; // Tarifa base por minuto
+
+        // Calcular el importe
+        float importValue = (distance * baseRate) + (duration * timeRate);
+
+        // Actualizar el importe en el trayecto actual
+        currentJourney.setImportValue(BigDecimal.valueOf(importValue));
+
+        System.out.println("Importe calculado: " + importValue + " EUR (distancia = " + distance + " km, duración = " +
+                duration + " min, velocidad promedio = " + avgSpeed + " km/h).");
     }
 
     // Métodos setter para inyectar dependencias (opcional)
