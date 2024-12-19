@@ -1,6 +1,8 @@
 package services.smartfeatures;
 
-
+import data.VehicleID;
+import exceptions.CorruptedImgException;
+import java.awt.image.BufferedImage;
 
 /**
  * Interface for decoding vehicle QR codes from images.
