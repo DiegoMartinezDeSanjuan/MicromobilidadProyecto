@@ -3,6 +3,7 @@ package services;
 import data.*;
 import exceptions.*;
 import micromobility.JourneyService;
+import micromobility.PMVehicle;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -80,4 +81,6 @@ public interface Server {
      * @param st  The station where the vehicle is located.
      */
     void registerLocation(VehicleID veh, StationID st);
+
+    PMVehicle getVehicleByID(VehicleID vhID) throws PMVNotAvailException;
 }
