@@ -176,7 +176,35 @@ public class JourneyRealizeHandler {
      * @throws ProceduralException Error en la secuencia procedimental.
      */
     public void startDriving() throws ConnectException, ProceduralException {
-        // Lógica para iniciar el desplazamiento
+        try {
+            // Validar que hay un vehículo asociado
+            if (currentVehicle == null) {
+                throw new ProceduralException("No hay un vehículo vinculado para iniciar el desplazamiento.");
+            }
+
+            // Validar que el estado del vehículo es NotAvailable
+            if (currentVehicle.getState() != PMVState.NotAvailable) {
+                throw new ProceduralException("El vehículo no está en estado NotAvailable.");
+            }
+
+            // Validar que existe un JourneyService en progreso
+            if (currentJourney == null) {
+                throw new ProceduralException("No se ha creado una instancia de JourneyService para iniciar el desplazamiento.");
+            }
+
+            // Validar conexión Bluetooth
+            System.out.println("Verificando conexión Bluetooth...");
+
+            // Actualizar el estado del vehículo a "UnderWay"
+            currentVehicle.setUnderWay();
+
+            // Actualizar JourneyService para indicar que el trayecto está en curso
+            currentJourney.setInProgress(true);
+
+            System.out.println("El desplazamiento ha comenzado exitosamente.");
+        } catch (Exception e) {
+            throw new ConnectException("Error inesperado al intentar iniciar el desplazamiento: " + e.getMessage());
+        }
     }
 
     /**
@@ -186,7 +214,32 @@ public class JourneyRealizeHandler {
      * @throws ProceduralException Error en la secuencia procedimental.
      */
     public void stopDriving() throws ConnectException, ProceduralException {
-        // Lógica para detener el desplazamiento
+        try {
+            // Validar que hay un vehículo asociado
+            if (currentVehicle == null) {
+                throw new ProceduralException("No hay un vehículo vinculado para detener el desplazamiento.");
+            }
+
+            // Validar que el estado del vehículo es UnderWay
+            if (currentVehicle.getState() != PMVState.UnderWay) {
+                throw new ProceduralException("El vehículo no está en marcha para detener el desplazamiento.");
+            }
+
+            // Validar que existe un JourneyService en progreso
+            if (currentJourney == null || !currentJourney.isInProgress()) {
+                throw new ProceduralException("No hay un trayecto en curso para detener.");
+            }
+
+            // Validar conexión Bluetooth
+            System.out.println("Verificando conexión Bluetooth...");
+
+            // Actualizar JourneyService para indicar que el trayecto no está en curso
+            currentJourney.setInProgress(false);
+
+            System.out.println("El desplazamiento ha sido detenido exitosamente.");
+        } catch (Exception e) {
+            throw new ConnectException("Error inesperado al intentar detener el desplazamiento: " + e.getMessage());
+        }
     }
 
     // Métodos internos
