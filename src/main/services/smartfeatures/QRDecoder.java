@@ -1,6 +1,3 @@
-package services.smartfeatures;
-
-import data.VehicleID;
 import exceptions.CorruptedImgException;
 
 import java.awt.image.BufferedImage;
@@ -18,4 +15,5 @@ public interface QRDecoder {
      * @throws CorruptedImgException If the image is invalid or cannot be processed.
      */
     VehicleID getVehicleID(BufferedImage QRImg) throws CorruptedImgException;
+
 }
