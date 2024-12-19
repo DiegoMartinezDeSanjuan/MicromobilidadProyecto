@@ -1,5 +1,7 @@
-import exceptions.CorruptedImgException;
+package services.smartfeatures;
 
+import data.VehicleID;
+import exceptions.CorruptedImgException;
 import java.awt.image.BufferedImage;
 
 /**
