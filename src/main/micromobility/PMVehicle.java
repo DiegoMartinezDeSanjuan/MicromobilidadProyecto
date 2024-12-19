@@ -1,24 +1,37 @@
 package micromobility;
 
 import data.GeographicPoint;
+import data.VehicleID;
 
 /**
  * Representa un Vehículo de Micromovilidad (PMV) con su estado y ubicación.
  */
 public class PMVehicle {
 
-    private PMVState state; // Estado actual del vehículo
-    private GeographicPoint location; // Ubicación actual del vehículo
+    private VehicleID id;              // Identificador único del vehículo
+    private PMVState state;            // Estado actual del vehículo
+    private GeographicPoint location;  // Ubicación actual del vehículo
 
     /**
      * Constructor de PMVehicle.
      *
+     * @param id              Identificador del vehículo.
      * @param initialState    El estado inicial del vehículo.
      * @param initialLocation La ubicación inicial del vehículo.
      */
-    public PMVehicle(PMVState initialState, GeographicPoint initialLocation) {
+    public PMVehicle(VehicleID id, PMVState initialState, GeographicPoint initialLocation) {
+        this.id = id;
         this.state = initialState;
         this.location = initialLocation;
+    }
+
+    /**
+     * Obtiene el identificador del vehículo.
+     *
+     * @return El identificador del vehículo.
+     */
+    public VehicleID getId() {
+        return id;
     }
 
     /**
@@ -67,5 +80,14 @@ public class PMVehicle {
      */
     public void setLocation(GeographicPoint newLocation) {
         this.location = newLocation;
+    }
+
+    @Override
+    public String toString() {
+        return "PMVehicle{" +
+                "id=" + id +
+                ", state=" + state +
+                ", location=" + location +
+                '}';
     }
 }
