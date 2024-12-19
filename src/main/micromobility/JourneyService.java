@@ -1,6 +1,8 @@
 package micromobility;
 
 import data.GeographicPoint;
+import data.StationID;
+import data.UserAccount;
 import micromobility.payment.Payment;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,6 +27,8 @@ public class JourneyService {
     private BigDecimal importValue;       // Importe total del trayecto
     private boolean inProgress;           // Indica si el trayecto está en curso
     private List<Payment> paymentMethods; // Métodos de pago asociados
+    private UserAccount user;
+    private StationID endStation;
 
     /**
      * Constructor de JourneyService.
@@ -41,4 +45,30 @@ public class JourneyService {
     }
 
     // Resto de getters, setters y métodos (igual que antes)...
+
+
+    public boolean isInProgress() {
+        return inProgress;
+    }
+
+    public void setInProgress(boolean inProgress) {
+        this.inProgress = inProgress;
+    }
+
+    public UserAccount getUser() {
+        return user;
+    }
+
+    public void setUser(UserAccount user) {
+        this.user = user;
+    }
+
+    public StationID getEndStation() {
+        return endStation;
+    }
+
+    public void setEndStation(StationID endStation) {
+        this.endStation = endStation;
+    }
+
 }

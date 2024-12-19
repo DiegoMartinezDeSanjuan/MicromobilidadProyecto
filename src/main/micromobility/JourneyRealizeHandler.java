@@ -99,8 +99,46 @@ public class JourneyRealizeHandler {
      */
     public void unPairVehicle() throws ConnectException, InvalidPairingArgsException,
             PairingNotFoundException, ProceduralException {
-        // Lógica para finalizar el trayecto
+
+        try {
+            // Validar que el trayecto actual existe y está en progreso
+            if (currentJourney == null || !currentJourney.isInProgress()) {
+                throw new ProceduralException("No hay un trayecto en progreso para finalizar.");
+            }
+
+            // Validar que el vehículo actual existe y está asociado
+            if (currentVehicle == null) {
+                throw new PairingNotFoundException("No hay un vehículo asociado para finalizar el trayecto.");
+            }
+
+            // Llamada al servidor para registrar la finalización del emparejamiento
+            server.stopPairing(
+                    currentJourney.getUser(),
+                    currentVehicle.getId(),
+                    currentJourney.getEndStation(),
+                    currentVehicle.getLocation(),
+                    LocalDateTime.now(),
+                    0, // Velocidad promedio (mock)
+                    0, // Distancia recorrida (mock)
+                    0, // Duración (mock)
+                    BigDecimal.ZERO // Importe calculado (mock)
+            );
+
+            // Actualizar el estado del vehículo a Available
+            currentVehicle.setAvailb();
+
+            // Finalizar el trayecto actual
+            currentJourney.setInProgress(false);
+
+            System.out.println("El trayecto ha finalizado correctamente.");
+        } catch (ConnectException | InvalidPairingArgsException | PairingNotFoundException e) {
+            throw e; // Relanzar excepciones específicas
+        } catch (Exception e) {
+            throw new ProceduralException("Error inesperado al finalizar el trayecto: " + e.getMessage());
+        }
     }
+
+
 
     /**
      * Emula la recepción del ID de una estación a través del canal Bluetooth.
