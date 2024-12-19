@@ -1,5 +1,4 @@
 import exceptions.CorruptedImgException;
-
 import java.awt.image.BufferedImage;
 
 /**
