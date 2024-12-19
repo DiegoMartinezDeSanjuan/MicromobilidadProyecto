@@ -13,14 +13,14 @@ public final class VehicleID {
      * Constructor for VehicleID with validation.
      *
      * @param id The vehicle identifier.
-     * @throws InvalidPairingArgsException If id is null, empty, or invalid.
+     * @throws InvalidPairingArgsException Si id es null, vacio, or invalido.
      */
     public VehicleID(String id) throws InvalidPairingArgsException {
         if (id == null || id.isEmpty()) {
-            throw new InvalidPairingArgsException("VehicleID cannot be null or empty.");
+            throw new InvalidPairingArgsException("VehicleID no puede ser nulo o estar vacío.");
         }
         if (!id.matches("[A-Za-z0-9]{5,15}")) {
-            throw new InvalidPairingArgsException("VehicleID must be 5 to 15 alphanumeric characters.");
+            throw new InvalidPairingArgsException("VehicleID debe contener entre 5 y 15 caracteres alfanuméricos.");
         }
         this.id = id;
     }

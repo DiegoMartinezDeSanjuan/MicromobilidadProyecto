@@ -17,10 +17,10 @@ public final class StationID {
      */
     public StationID(String id) throws InvalidPairingArgsException {
         if (id == null || id.isEmpty()) {
-            throw new InvalidPairingArgsException("StationID cannot be null or empty.");
+            throw new InvalidPairingArgsException("StationID no puede ser nulo o estar vacío.");
         }
         if (!id.matches("[A-Za-z0-9]{3,10}")) {
-            throw new InvalidPairingArgsException("StationID must be 3 to 10 alphanumeric characters.");
+            throw new InvalidPairingArgsException("StationID debe contener entre 3 y 10 caracteres alfanuméricos.");
         }
         this.id = id;
     }
