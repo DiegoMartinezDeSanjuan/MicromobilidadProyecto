@@ -10,6 +10,7 @@ import services.smartfeatures.ArduinoMicroController;
 import services.smartfeatures.QRDecoder;
 
 
+import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -50,26 +51,37 @@ public class JourneyRealizeHandler {
      * @throws PMVNotAvailException            El vehículo no está disponible.
      * @throws ProceduralException             Error en la secuencia procedimental.
      */
-    public void scanQR() throws ConnectException, InvalidPairingArgsException,
+    public void scanQR(BufferedImage qrImage) throws ConnectException, InvalidPairingArgsException,
             CorruptedImgException, PMVNotAvailException, ProceduralException {
 
-        // Decodificar el QR para obtener el VehicleID
-        VehicleID vehicleID = qrDecoder.getVehicleID("QR_SIMULATED"); // QR simulado
+        try {
+            // Decodificar el QR para obtener el VehicleID
+            VehicleID vehicleID = qrDecoder.getVehicleID(qrImage); // Ahora usa BufferedImage
 
-        // Obtener el vehículo desde el servidor
-        currentVehicle = server.getVehicleByID(vehicleID);
+            // Obtener el vehículo desde el servidor
+            currentVehicle = server.getVehicleByID(vehicleID);
 
-        // Actualizar el estado del vehículo a "UnderWay"
-        currentVehicle.setUnderWay();
+            // Verificar si el vehículo está disponible
+            if (currentVehicle.getState() != PMVState.Available) {
+                throw new PMVNotAvailException("El vehículo no está disponible para su uso.");
+            }
 
-        // Registrar el trayecto actual
-        currentJourney = new JourneyService(
-                currentVehicle.getLocation(),
-                java.time.LocalDate.now(),
-                java.time.LocalTime.now()
-        );
+            // Actualizar el estado del vehículo a "UnderWay"
+            currentVehicle.setUnderWay();
 
-        System.out.println("El trayecto ha comenzado con éxito.");
+            // Registrar el trayecto actual
+            currentJourney = new JourneyService(
+                    currentVehicle.getLocation(),
+                    java.time.LocalDate.now(),
+                    java.time.LocalTime.now()
+            );
+
+            System.out.println("El trayecto ha comenzado con éxito.");
+        } catch (CorruptedImgException | InvalidPairingArgsException | PMVNotAvailException e) {
+            throw e; // Relanzar excepciones específicas
+        } catch (Exception e) {
+            throw new ProceduralException("Error en la secuencia procedimental: " + e.getMessage());
+        }
     }
 
     /**
