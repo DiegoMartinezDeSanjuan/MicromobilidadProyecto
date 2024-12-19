@@ -147,7 +147,26 @@ public class JourneyRealizeHandler {
      * @throws ConnectException Error de conexión.
      */
     public void broadcastStationID(StationID stID) throws ConnectException {
-        // Lógica para gestionar el ID de la estación
+        try {
+            // Validar que el ID de la estación no sea nulo
+            if (stID == null) {
+                throw new IllegalArgumentException("El ID de la estación no puede ser nulo.");
+            }
+
+            // Simulación de la recepción del ID de la estación por Bluetooth
+            System.out.println("Recibiendo el ID de la estación a través de Bluetooth: " + stID);
+
+            // Aquí podrías añadir lógica adicional, como almacenar o procesar el ID de la estación
+            // Por ejemplo:
+            // server.registerLocation(vehicleID, stID);
+
+        } catch (IllegalArgumentException e) {
+            // Relanzar cualquier excepción lógica como un ConnectException
+            throw new ConnectException("Error en la conexión Bluetooth: " + e.getMessage());
+        } catch (Exception e) {
+            // Manejar cualquier otro error inesperado como un problema de conexión
+            throw new ConnectException("Error inesperado al transmitir el ID de la estación: " + e.getMessage());
+        }
     }
 
     /**
