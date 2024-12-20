@@ -36,7 +36,7 @@ public class JourneyRealizeHandler {
      * @param qrDecoder  Servicio para decodificar códigos QR.
      * @param arduino    Microcontrolador Arduino.
      */
-    public JourneyRealizeHandler(Server server, QRDecoder qrDecoder, ArduinoMicroController arduino) {
+    public JourneyRealizeHandler(Server server, QRDecoder qrDecoder, ArduinoMicroController arduino, UnbondedBTSignal btSignal) {
         this.server = server;
         this.qrDecoder = qrDecoder;
         this.arduino = arduino;
@@ -336,5 +336,21 @@ public class JourneyRealizeHandler {
 
     public void setArduino(ArduinoMicroController arduino) {
         this.arduino = arduino;
+    }
+
+    public JourneyService getCurrentJourney() {
+        return currentJourney;
+    }
+
+    public void setCurrentJourney(JourneyService currentJourney) {
+        this.currentJourney = currentJourney;
+    }
+
+    public PMVehicle getCurrentVehicle() {
+        return currentVehicle;
+    }
+
+    public void setCurrentVehicle(PMVehicle currentVehicle) {
+        this.currentVehicle = currentVehicle;
     }
 }

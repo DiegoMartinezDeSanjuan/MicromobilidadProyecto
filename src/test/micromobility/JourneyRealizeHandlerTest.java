@@ -49,15 +49,22 @@ class JourneyRealizeHandlerTest {
     }
 
     @Test
-    void testBroadcastStationID_Success() throws Exception {
-        StationID stationID = new StationID("S123");
-        handler.broadcastStationID(stationID);
+    void testScanQR_VehicleNotAvailable() {
+        mockQRDecoder.setSimulateVehicleNotAvailable(true);
+        BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 
-        assertDoesNotThrow(() -> mockBTSignal.BTbroadcast());
+        assertThrows(PMVNotAvailException.class, () -> handler.scanQR(mockImage));
     }
 
     @Test
-    void testBroadcastStationID_ConnectionFailure() {
+    void testBroadcastStationID_Success() throws InvalidPairingArgsException {
+        StationID stationID = new StationID("S123");
+
+        assertDoesNotThrow(() -> handler.broadcastStationID(stationID));
+    }
+
+    @Test
+    void testBroadcastStationID_ConnectionFailure() throws InvalidPairingArgsException {
         mockBTSignal.setSimulateConnectionIssue(true);
         StationID stationID = new StationID("S123");
 
@@ -66,9 +73,11 @@ class JourneyRealizeHandlerTest {
 
     @Test
     void testStartDriving_Success() throws Exception {
+        BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         VehicleID vehicleID = new VehicleID("V12345");
         PMVehicle vehicle = new PMVehicle(vehicleID, PMVState.NotAvailable, new GeographicPoint(41.3851f, 2.1734f));
-        handler.setCurrentVehicle(vehicle);
+        mockServer.addVehicle(vehicleID, vehicle);
+        handler.scanQR(mockImage);
 
         handler.startDriving();
 
@@ -76,10 +85,17 @@ class JourneyRealizeHandlerTest {
     }
 
     @Test
+    void testStartDriving_NoVehicle() {
+        assertThrows(ProceduralException.class, () -> handler.startDriving());
+    }
+
+    @Test
     void testStopDriving_Success() throws Exception {
+        BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         VehicleID vehicleID = new VehicleID("V12345");
         PMVehicle vehicle = new PMVehicle(vehicleID, PMVState.UnderWay, new GeographicPoint(41.3851f, 2.1734f));
-        handler.setCurrentVehicle(vehicle);
+        mockServer.addVehicle(vehicleID, vehicle);
+        handler.scanQR(mockImage);
 
         handler.stopDriving();
 
@@ -87,15 +103,26 @@ class JourneyRealizeHandlerTest {
     }
 
     @Test
+    void testStopDriving_NoVehicle() {
+        assertThrows(ProceduralException.class, () -> handler.stopDriving());
+    }
+
+    @Test
     void testUnPairVehicle_Success() throws Exception {
+        BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         VehicleID vehicleID = new VehicleID("V12345");
         PMVehicle vehicle = new PMVehicle(vehicleID, PMVState.UnderWay, new GeographicPoint(41.3851f, 2.1734f));
-        handler.setCurrentVehicle(vehicle);
-        handler.scanQR(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB));
+        mockServer.addVehicle(vehicleID, vehicle);
+        handler.scanQR(mockImage);
 
         handler.unPairVehicle();
 
         assertEquals(PMVState.Available, vehicle.getState());
         assertFalse(handler.getCurrentJourney().isInProgress());
+    }
+
+    @Test
+    void testUnPairVehicle_NoJourney() {
+        assertThrows(ProceduralException.class, () -> handler.unPairVehicle());
     }
 }
