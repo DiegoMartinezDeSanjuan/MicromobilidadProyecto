@@ -91,6 +91,11 @@ public class MockServer implements Server {
      * @param vehicle La instancia de PMVehicle.
      */
     public void addVehicle(VehicleID vhID, PMVehicle vehicle) {
+        if (vhID == null || vehicle == null) {
+            throw new IllegalArgumentException("VehicleID o PMVehicle no pueden ser nulos.");
+        }
         vehicles.put(vhID, vehicle);
+        System.out.println("Mock: Vehículo " + vhID.getId() + " añadido correctamente.");
     }
+
 }

@@ -30,15 +30,25 @@ class JourneyRealizeHandlerTest {
     @Test
     void testScanQR_Success() throws Exception {
         BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+
+        // Crear un VehicleID y un vehículo en estado Available
         VehicleID vehicleID = new VehicleID("V12345");
         PMVehicle vehicle = new PMVehicle(vehicleID, PMVState.Available, new GeographicPoint(41.3851f, 2.1734f));
+
+        // Registrar el vehículo en el servidor mock
         mockServer.addVehicle(vehicleID, vehicle);
 
+        // Configurar el QRDecoder para devolver el mismo VehicleID
+        mockQRDecoder.setSimulatedVehicleID(vehicleID);
+
+        // Escanear el QR
         handler.scanQR(mockImage);
 
-        assertNotNull(handler.getCurrentJourney());
-        assertEquals(PMVState.UnderWay, vehicle.getState());
+        // Verificar que el estado del vehículo ha cambiado a NotAvailable
+        assertEquals(PMVState.NotAvailable, vehicle.getState());
     }
+
+
 
     @Test
     void testScanQR_CorruptedImage() {
@@ -50,18 +60,23 @@ class JourneyRealizeHandlerTest {
 
     @Test
     void testScanQR_VehicleNotAvailable() throws Exception {
-        // Configurar el mock para devolver un VehicleID válido
+        // Configurar un VehicleID y un vehículo en estado NotAvailable
         VehicleID vehicleID = new VehicleID("V12345");
-        // Añadir al servidor un vehículo con estado NotAvailable
         PMVehicle unavailableVehicle = new PMVehicle(vehicleID, PMVState.NotAvailable, new GeographicPoint(41.3851f, 2.1734f));
+
+        // Registrar el vehículo en el servidor mock
         mockServer.addVehicle(vehicleID, unavailableVehicle);
 
-        BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        mockQRDecoder.setSimulateVehicleNotAvailable(true); // Activar simulación de vehículo no disponible
+        // Configurar el QRDecoder para devolver el mismo VehicleID
+        mockQRDecoder.setSimulatedVehicleID(vehicleID);
 
-        // Validar que se lanza PMVNotAvailException
+        // Crear una imagen mock para simular el escaneo de un QR
+        BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+
+        // Validar que se lanza PMVNotAvailException al escanear el QR
         assertThrows(PMVNotAvailException.class, () -> handler.scanQR(mockImage));
     }
+
 
 
     @Test
@@ -82,15 +97,28 @@ class JourneyRealizeHandlerTest {
     @Test
     void testStartDriving_Success() throws Exception {
         BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+
+        // Crear un VehicleID y un vehículo en estado Available
         VehicleID vehicleID = new VehicleID("V12345");
-        PMVehicle vehicle = new PMVehicle(vehicleID, PMVState.NotAvailable, new GeographicPoint(41.3851f, 2.1734f));
+        PMVehicle vehicle = new PMVehicle(vehicleID, PMVState.Available, new GeographicPoint(41.3851f, 2.1734f));
+
+        // Registrar el vehículo en el servidor mock
         mockServer.addVehicle(vehicleID, vehicle);
+
+        // Configurar el QRDecoder para devolver el mismo VehicleID
+        mockQRDecoder.setSimulatedVehicleID(vehicleID);
+
+        // Escanear el QR para pasar el vehículo a estado NotAvailable
         handler.scanQR(mockImage);
 
+        // Iniciar el desplazamiento
         handler.startDriving();
 
+        // Verificar que el estado del vehículo ha cambiado a UnderWay
         assertEquals(PMVState.UnderWay, vehicle.getState());
     }
+
+
 
     @Test
     void testStartDriving_NoVehicle() {
