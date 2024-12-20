@@ -54,42 +54,24 @@ public class JourneyRealizeHandler {
      * @throws PMVNotAvailException            El vehículo no está disponible.
      * @throws ProceduralException             Error en la secuencia procedimental.
      */
-    public void scanQR(BufferedImage qrImage) throws ConnectException, InvalidPairingArgsException,
-            CorruptedImgException, PMVNotAvailException, ProceduralException {
+    public void scanQR(BufferedImage qrImage) throws ConnectException, InvalidPairingArgsException, CorruptedImgException, PMVNotAvailException {
+        System.out.println("Iniciando proceso de escaneo de QR...");
+        VehicleID vehicleID = qrDecoder.getVehicleID(qrImage);
+        System.out.println("QR decodificado, VehicleID: " + vehicleID);
 
-        try {
-            // Decodificar el QR para obtener el VehicleID
-            VehicleID vehicleID = qrDecoder.getVehicleID(qrImage); // Puede lanzar CorruptedImgException
+        currentVehicle = server.getVehicleByID(vehicleID);
+        System.out.println("Estado inicial del vehículo: " + currentVehicle.getState());
 
-            if (vehicleID == null) {
-                throw new InvalidPairingArgsException("VehicleID no puede ser nulo o inválido.");
-            }
-
-            // Obtener el vehículo desde el servidor
-            currentVehicle = server.getVehicleByID(vehicleID); // Puede lanzar InvalidPairingArgsException
-
-            // Verificar si el vehículo está disponible
-            if (currentVehicle.getState() != PMVState.Available) {
-                throw new PMVNotAvailException("El vehículo no está disponible para su uso.");
-            }
-
-            // Actualizar el estado del vehículo a "UnderWay"
-            currentVehicle.setUnderWay();
-
-            // Registrar el trayecto actual
-            currentJourney = new JourneyService(
-                    currentVehicle.getLocation(),
-                    java.time.LocalDate.now(),
-                    java.time.LocalTime.now()
-            );
-
-            System.out.println("El trayecto ha comenzado con éxito.");
-        } catch (CorruptedImgException | InvalidPairingArgsException | PMVNotAvailException e) {
-            throw e; // Relanzar excepciones específicas
-        } catch (Exception e) {
-            throw new ProceduralException("Error en la secuencia procedimental: " + e.getMessage());
+        if (currentVehicle.getState() != PMVState.Available) {
+            throw new PMVNotAvailException("El vehículo no está disponible.");
         }
+
+        // Cambiar el estado del vehículo a NotAvailable
+        currentVehicle.setNotAvailb();
+        System.out.println("Estado del vehículo actualizado a 'NotAvailable'.");
     }
+
+
 
 
     /**
