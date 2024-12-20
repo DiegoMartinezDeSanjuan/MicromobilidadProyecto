@@ -8,6 +8,7 @@ import exceptions.*;
 import services.Server;
 import services.smartfeatures.ArduinoMicroController;
 import services.smartfeatures.QRDecoder;
+import services.smartfeatures.UnbondedBTSignal;
 
 
 import java.awt.image.BufferedImage;
@@ -23,7 +24,8 @@ public class JourneyRealizeHandler {
     // Atributos
     private Server server;                    // Dependencia del servidor
     private QRDecoder qrDecoder;              // Servicio para decodificar códigos QR
-    private ArduinoMicroController arduino;   // Microcontrolador Arduino para interacciones con el vehículo
+    private ArduinoMicroController arduino;  // Microcontrolador Arduino para interacciones con el vehículo
+    private UnbondedBTSignal btSignal; // Nueva dependencia para manejar Bluetooth
     private JourneyService currentJourney;    // El servicio de trayecto actual
     private PMVehicle currentVehicle;       // Vehículo actual asignado
 
@@ -38,6 +40,7 @@ public class JourneyRealizeHandler {
         this.server = server;
         this.qrDecoder = qrDecoder;
         this.arduino = arduino;
+        this.btSignal = btSignal; // Inicialización de la nueva dependencia
     }
 
     // Métodos de eventos de entrada
@@ -147,25 +150,17 @@ public class JourneyRealizeHandler {
      * @throws ConnectException Error de conexión.
      */
     public void broadcastStationID(StationID stID) throws ConnectException {
+        if (stID == null) {
+            throw new IllegalArgumentException("El ID de la estación no puede ser nulo.");
+        }
+
+        System.out.println("Simulación: Recibiendo el ID de la estación a través de Bluetooth: " + stID);
+
+        // Llamada al método BTbroadcast de UnbondedBTSignal
         try {
-            // Validar que el ID de la estación no sea nulo
-            if (stID == null) {
-                throw new IllegalArgumentException("El ID de la estación no puede ser nulo.");
-            }
-
-            // Simulación de la recepción del ID de la estación por Bluetooth
-            System.out.println("Recibiendo el ID de la estación a través de Bluetooth: " + stID);
-
-            // Aquí podrías añadir lógica adicional, como almacenar o procesar el ID de la estación
-            // Por ejemplo:
-            // server.registerLocation(vehicleID, stID);
-
-        } catch (IllegalArgumentException e) {
-            // Relanzar cualquier excepción lógica como un ConnectException
-            throw new ConnectException("Error en la conexión Bluetooth: " + e.getMessage());
-        } catch (Exception e) {
-            // Manejar cualquier otro error inesperado como un problema de conexión
-            throw new ConnectException("Error inesperado al transmitir el ID de la estación: " + e.getMessage());
+            btSignal.BTbroadcast();
+        } catch (ConnectException e) {
+            throw new ConnectException("Error de conexión Bluetooth al transmitir el ID de la estación.", e);
         }
     }
 
