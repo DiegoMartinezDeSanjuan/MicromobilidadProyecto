@@ -49,12 +49,20 @@ class JourneyRealizeHandlerTest {
     }
 
     @Test
-    void testScanQR_VehicleNotAvailable() {
-        mockQRDecoder.setSimulateVehicleNotAvailable(true);
-        BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+    void testScanQR_VehicleNotAvailable() throws Exception {
+        // Configurar el mock para devolver un VehicleID válido
+        VehicleID vehicleID = new VehicleID("V12345");
+        // Añadir al servidor un vehículo con estado NotAvailable
+        PMVehicle unavailableVehicle = new PMVehicle(vehicleID, PMVState.NotAvailable, new GeographicPoint(41.3851f, 2.1734f));
+        mockServer.addVehicle(vehicleID, unavailableVehicle);
 
+        BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        mockQRDecoder.setSimulateVehicleNotAvailable(true); // Activar simulación de vehículo no disponible
+
+        // Validar que se lanza PMVNotAvailException
         assertThrows(PMVNotAvailException.class, () -> handler.scanQR(mockImage));
     }
+
 
     @Test
     void testBroadcastStationID_Success() throws InvalidPairingArgsException {

@@ -26,8 +26,10 @@ public class MockQRDecoder implements QRDecoder {
             throw new CorruptedImgException("Imagen corrupta.");
         }
         if (simulateVehicleNotAvailable) {
-            throw new InvalidPairingArgsException("VehicleID no válido en el QR.");
+            // Devuelve un VehicleID válido para simular un vehículo no disponible
+            return new VehicleID("V12345");
         }
-        return new VehicleID("V12345");
+        // Devuelve un VehicleID válido por defecto
+        return new VehicleID("V67890");
     }
 }
