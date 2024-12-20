@@ -2,6 +2,8 @@ package services.smartfeatures;
 
 import data.VehicleID;
 import exceptions.CorruptedImgException;
+import exceptions.InvalidPairingArgsException;
+
 import java.awt.image.BufferedImage;
 
 /**
@@ -14,8 +16,9 @@ public interface QRDecoder {
      *
      * @param QRImg The image containing the QR code to be decoded.
      * @return The decoded VehicleID.
-     * @throws CorruptedImgException If the image is invalid or cannot be processed.
+     * @throws CorruptedImgException       If the image is invalid or cannot be processed.
+     * @throws InvalidPairingArgsException If the QR code contains invalid pairing arguments.
      */
-    VehicleID getVehicleID(BufferedImage QRImg) throws CorruptedImgException;
-
+    VehicleID getVehicleID(BufferedImage QRImg) throws CorruptedImgException, InvalidPairingArgsException;
 }
+
