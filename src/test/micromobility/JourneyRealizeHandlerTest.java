@@ -7,6 +7,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -79,6 +83,8 @@ class JourneyRealizeHandlerTest {
 
 
 
+
+
     @Test
     void testBroadcastStationID_Success() throws InvalidPairingArgsException {
         StationID stationID = new StationID("S123");
@@ -111,14 +117,24 @@ class JourneyRealizeHandlerTest {
         // Escanear el QR para pasar el vehículo a estado NotAvailable
         handler.scanQR(mockImage);
 
+        // Crear un JourneyService válido
+        GeographicPoint originPoint = new GeographicPoint(41.3851f, 2.1734f);
+        LocalDate initDate = LocalDate.now();
+        LocalTime initHour = LocalTime.now();
+        JourneyService journeyService = new JourneyService(originPoint, initDate, initHour);
+
+        // Configurar el handler con el JourneyService
+        handler.setCurrentJourney(journeyService);
+
         // Iniciar el desplazamiento
         handler.startDriving();
 
         // Verificar que el estado del vehículo ha cambiado a UnderWay
         assertEquals(PMVState.UnderWay, vehicle.getState());
+
+        // Verificar que el JourneyService está en progreso
+        assertTrue(journeyService.isInProgress());
     }
-
-
 
     @Test
     void testStartDriving_NoVehicle() {
@@ -127,16 +143,40 @@ class JourneyRealizeHandlerTest {
 
     @Test
     void testStopDriving_Success() throws Exception {
+        // Crear una imagen simulada para el QR
         BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+
+        // Crear un VehicleID y un vehículo en estado UnderWay
         VehicleID vehicleID = new VehicleID("V12345");
         PMVehicle vehicle = new PMVehicle(vehicleID, PMVState.UnderWay, new GeographicPoint(41.3851f, 2.1734f));
-        mockServer.addVehicle(vehicleID, vehicle);
-        handler.scanQR(mockImage);
 
+        // Configurar el servidor mock para manejar el vehículo
+        mockServer.addVehicle(vehicleID, vehicle);
+
+        // Crear un JourneyService simulado y asociarlo al controlador
+        JourneyService journeyService = new JourneyService(
+                new GeographicPoint(41.3851f, 2.1734f), // Punto de inicio
+                LocalDate.now(),                        // Fecha de inicio
+                LocalTime.now()                         // Hora de inicio
+        );
+        journeyService.setInProgress(true); // Asegurar que el trayecto está en progreso
+        handler.setCurrentJourney(journeyService);
+
+        // Asociar el vehículo al controlador directamente sin escanear el QR
+        handler.setCurrentVehicle(vehicle);
+
+        // Detener el desplazamiento
         handler.stopDriving();
 
+        // Validar que el trayecto ha finalizado correctamente
         assertFalse(handler.getCurrentJourney().isInProgress());
+        assertEquals(PMVState.Available, vehicle.getState());
+        System.out.println("Test stopDriving ejecutado correctamente.");
     }
+
+
+
+
 
     @Test
     void testStopDriving_NoVehicle() {
@@ -145,16 +185,39 @@ class JourneyRealizeHandlerTest {
 
     @Test
     void testUnPairVehicle_Success() throws Exception {
-        BufferedImage mockImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        // Configurar el vehículo con una ubicación inicial
         VehicleID vehicleID = new VehicleID("V12345");
-        PMVehicle vehicle = new PMVehicle(vehicleID, PMVState.UnderWay, new GeographicPoint(41.3851f, 2.1734f));
+        GeographicPoint vehicleLocation = new GeographicPoint(41.4020f, 2.1910f); // Ubicación actual válida
+        PMVehicle vehicle = new PMVehicle(vehicleID, PMVState.NotAvailable, vehicleLocation);
         mockServer.addVehicle(vehicleID, vehicle);
-        handler.scanQR(mockImage);
 
+        // Configurar la estación de inicio
+        GeographicPoint originPoint = new GeographicPoint(41.3851f, 2.1734f);
+        StationID stationID = new StationID("ST123");
+
+        // Configurar una fecha y hora de inicio más antigua
+        LocalDate journeyStartDate = LocalDate.now().minusDays(1);
+        LocalTime journeyStartTime = LocalTime.now().minusHours(2);
+
+        // Configurar el JourneyService y asociarlo al handler
+        JourneyService journeyService = new JourneyService(originPoint, journeyStartDate, journeyStartTime);
+        journeyService.setInProgress(true);
+        journeyService.setEndStation(stationID);
+
+        // Asociar JourneyService y vehículo al handler
+        handler.setCurrentJourney(journeyService);
+        handler.setCurrentVehicle(vehicle);
+
+        // Finalizar el trayecto
         handler.unPairVehicle();
 
+        // Verificar los resultados
         assertEquals(PMVState.Available, vehicle.getState());
-        assertFalse(handler.getCurrentJourney().isInProgress());
+        assertFalse(journeyService.isInProgress());
+        assertTrue(journeyService.getDistance() > 0);
+        assertTrue(journeyService.getDuration() > 0);
+        assertTrue(journeyService.getAverageSpeed() > 0);
+        assertTrue(journeyService.getImportValue().compareTo(BigDecimal.ZERO) > 0);
     }
 
     @Test

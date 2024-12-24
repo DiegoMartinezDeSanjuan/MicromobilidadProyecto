@@ -54,22 +54,46 @@ public class JourneyRealizeHandler {
      * @throws PMVNotAvailException            El vehículo no está disponible.
      * @throws ProceduralException             Error en la secuencia procedimental.
      */
-    public void scanQR(BufferedImage qrImage) throws ConnectException, InvalidPairingArgsException, CorruptedImgException, PMVNotAvailException {
+    public void scanQR(BufferedImage qrImage) throws ConnectException, InvalidPairingArgsException, CorruptedImgException, PMVNotAvailException, ProceduralException {
         System.out.println("Iniciando proceso de escaneo de QR...");
-        VehicleID vehicleID = qrDecoder.getVehicleID(qrImage);
-        System.out.println("QR decodificado, VehicleID: " + vehicleID);
 
-        currentVehicle = server.getVehicleByID(vehicleID);
-        System.out.println("Estado inicial del vehículo: " + currentVehicle.getState());
-
-        if (currentVehicle.getState() != PMVState.Available) {
-            throw new PMVNotAvailException("El vehículo no está disponible.");
+        if (qrImage == null) {
+            throw new CorruptedImgException("La imagen del QR está corrupta o es nula.");
         }
 
-        // Cambiar el estado del vehículo a NotAvailable
-        currentVehicle.setNotAvailb();
-        System.out.println("Estado del vehículo actualizado a 'NotAvailable'.");
+        try {
+            VehicleID vehicleID = qrDecoder.getVehicleID(qrImage);
+            if (vehicleID == null) {
+                throw new ProceduralException("VehicleID no puede ser nulo o inválido.");
+            }
+
+            System.out.println("QR decodificado, VehicleID: " + vehicleID);
+
+            currentVehicle = server.getVehicleByID(vehicleID);
+            if (currentVehicle == null) {
+                throw new ProceduralException("El vehículo no se encontró en el servidor.");
+            }
+
+            System.out.println("Estado inicial del vehículo: " + currentVehicle.getState());
+
+            if (currentVehicle.getState() != PMVState.Available) {
+                throw new PMVNotAvailException("El vehículo no está disponible.");
+            }
+
+            // Actualización del estado si todo está correcto
+            currentVehicle.setNotAvailb();
+            System.out.println("Estado del vehículo actualizado a 'NotAvailable'.");
+        } catch (CorruptedImgException e) {
+            // Propagar la excepción directamente
+            throw e;
+        } catch (PMVNotAvailException e) {
+            throw e;
+        } catch (Exception e) {
+            // Encapsular cualquier otra excepción no prevista
+            throw new ProceduralException("Error durante el escaneo del QR: " + e.getMessage(), e);
+        }
     }
+
 
 
 
@@ -82,44 +106,56 @@ public class JourneyRealizeHandler {
      * @throws PairingNotFoundException        No se encuentra el emparejamiento.
      * @throws ProceduralException             Error en la secuencia procedimental.
      */
-    public void unPairVehicle() throws ConnectException, InvalidPairingArgsException,
-            PairingNotFoundException, ProceduralException {
-
+    public void unPairVehicle() throws ConnectException, InvalidPairingArgsException, PairingNotFoundException, ProceduralException {
         try {
-            // Validar que el trayecto actual existe y está en progreso
             if (currentJourney == null || !currentJourney.isInProgress()) {
                 throw new ProceduralException("No hay un trayecto en progreso para finalizar.");
             }
 
-            // Validar que el vehículo actual existe y está asociado
             if (currentVehicle == null) {
                 throw new PairingNotFoundException("No hay un vehículo asociado para finalizar el trayecto.");
             }
 
-            // Llamada al servidor para registrar la finalización del emparejamiento
+            // Calcular valores del trayecto antes de finalizar
+            GeographicPoint endPoint = currentVehicle.getLocation();
+            if (endPoint == null) {
+                throw new ProceduralException("La ubicación del vehículo no está disponible.");
+            }
+
+            LocalDateTime endDateTime = LocalDateTime.now();
+            calculateValues(endPoint, endDateTime);
+
+            if (currentJourney.getDuration() <= 0) {
+                throw new ProceduralException("La duración debe ser mayor a 0.");
+            }
+
+            // Calcular el importe del trayecto
+            calculateImport(endDateTime);
+
+            if (currentJourney.getImportValue().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new ProceduralException("El importe debe ser mayor a 0.");
+            }
+
+            // Detener el emparejamiento en el servidor
             server.stopPairing(
                     currentJourney.getUser(),
                     currentVehicle.getId(),
                     currentJourney.getEndStation(),
-                    currentVehicle.getLocation(),
-                    LocalDateTime.now(),
-                    0, // Velocidad promedio (mock)
-                    0, // Distancia recorrida (mock)
-                    0, // Duración (mock)
-                    BigDecimal.ZERO // Importe calculado (mock)
+                    endPoint,
+                    endDateTime,
+                    currentJourney.getAverageSpeed(),
+                    currentJourney.getDistance(),
+                    currentJourney.getDuration(),
+                    currentJourney.getImportValue()
             );
 
-            // Actualizar el estado del vehículo a Available
+            // Actualizar el estado del vehículo y del trayecto
             currentVehicle.setAvailb();
-
-            // Finalizar el trayecto actual
             currentJourney.setInProgress(false);
 
             System.out.println("El trayecto ha finalizado correctamente.");
-        } catch (ConnectException | InvalidPairingArgsException | PairingNotFoundException e) {
-            throw e; // Relanzar excepciones específicas
         } catch (Exception e) {
-            throw new ProceduralException("Error inesperado al finalizar el trayecto: " + e.getMessage());
+            throw new ProceduralException("Error inesperado al finalizar el trayecto: " + e.getMessage(), e);
         }
     }
 
@@ -136,9 +172,6 @@ public class JourneyRealizeHandler {
             throw new IllegalArgumentException("El ID de la estación no puede ser nulo.");
         }
 
-        System.out.println("Simulación: Recibiendo el ID de la estación a través de Bluetooth: " + stID);
-
-        // Llamada al método BTbroadcast de UnbondedBTSignal
         try {
             btSignal.BTbroadcast();
         } catch (ConnectException e) {
@@ -153,36 +186,29 @@ public class JourneyRealizeHandler {
      * @throws ProceduralException Error en la secuencia procedimental.
      */
     public void startDriving() throws ConnectException, ProceduralException {
+        System.out.println("Iniciando desplazamiento...");
+
+        if (currentVehicle == null) {
+            throw new ProceduralException("No hay un vehículo vinculado para iniciar el desplazamiento.");
+        }
+
+        if (currentVehicle.getState() != PMVState.NotAvailable) {
+            throw new ProceduralException("El vehículo no está en estado NotAvailable.");
+        }
+
+        if (currentJourney == null) {
+            throw new ProceduralException("No se ha creado una instancia de JourneyService para iniciar el desplazamiento.");
+        }
+
         try {
-            // Validar que hay un vehículo asociado
-            if (currentVehicle == null) {
-                throw new ProceduralException("No hay un vehículo vinculado para iniciar el desplazamiento.");
-            }
-
-            // Validar que el estado del vehículo es NotAvailable
-            if (currentVehicle.getState() != PMVState.NotAvailable) {
-                throw new ProceduralException("El vehículo no está en estado NotAvailable.");
-            }
-
-            // Validar que existe un JourneyService en progreso
-            if (currentJourney == null) {
-                throw new ProceduralException("No se ha creado una instancia de JourneyService para iniciar el desplazamiento.");
-            }
-
-            // Validar conexión Bluetooth
-            System.out.println("Verificando conexión Bluetooth...");
-
-            // Actualizar el estado del vehículo a "UnderWay"
             currentVehicle.setUnderWay();
-
-            // Actualizar JourneyService para indicar que el trayecto está en curso
             currentJourney.setInProgress(true);
-
             System.out.println("El desplazamiento ha comenzado exitosamente.");
         } catch (Exception e) {
-            throw new ConnectException("Error inesperado al intentar iniciar el desplazamiento: " + e.getMessage());
+            throw new ProceduralException("Error inesperado al iniciar el desplazamiento: " + e.getMessage(), e);
         }
     }
+
 
     /**
      * Detiene el desplazamiento del vehículo.
@@ -191,33 +217,25 @@ public class JourneyRealizeHandler {
      * @throws ProceduralException Error en la secuencia procedimental.
      */
     public void stopDriving() throws ConnectException, ProceduralException {
-        try {
-            // Validar que hay un vehículo asociado
-            if (currentVehicle == null) {
-                throw new ProceduralException("No hay un vehículo vinculado para detener el desplazamiento.");
-            }
-
-            // Validar que el estado del vehículo es UnderWay
-            if (currentVehicle.getState() != PMVState.UnderWay) {
-                throw new ProceduralException("El vehículo no está en marcha para detener el desplazamiento.");
-            }
-
-            // Validar que existe un JourneyService en progreso
-            if (currentJourney == null || !currentJourney.isInProgress()) {
-                throw new ProceduralException("No hay un trayecto en curso para detener.");
-            }
-
-            // Validar conexión Bluetooth
-            System.out.println("Verificando conexión Bluetooth...");
-
-            // Actualizar JourneyService para indicar que el trayecto no está en curso
-            currentJourney.setInProgress(false);
-
-            System.out.println("El desplazamiento ha sido detenido exitosamente.");
-        } catch (Exception e) {
-            throw new ConnectException("Error inesperado al intentar detener el desplazamiento: " + e.getMessage());
+        if (currentVehicle == null) {
+            throw new ProceduralException("No hay un vehículo vinculado para detener el desplazamiento.");
         }
+
+        if (currentVehicle.getState() != PMVState.UnderWay) {
+            throw new ProceduralException("El vehículo no está en marcha para detener el desplazamiento.");
+        }
+
+        if (currentJourney == null || !currentJourney.isInProgress()) {
+            throw new ProceduralException("No hay un trayecto en curso para detener.");
+        }
+
+        // Cambiar el estado del vehículo a 'Available'
+        currentVehicle.setAvailb();
+        currentJourney.setInProgress(false);
+
+        System.out.println("El desplazamiento ha sido detenido exitosamente.");
     }
+
 
     // Métodos internos
 
