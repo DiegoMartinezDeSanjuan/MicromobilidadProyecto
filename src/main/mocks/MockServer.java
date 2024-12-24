@@ -46,12 +46,27 @@ public class MockServer implements Server {
     public void stopPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date,
                             float avSp, float dist, int dur, BigDecimal imp)
             throws InvalidPairingArgsException, ConnectException {
-        if (user == null || veh == null || st == null || loc == null || date == null) {
-            throw new InvalidPairingArgsException("Argumentos inválidos para finalizar el emparejamiento.");
+
+        // Validaciones mínimas necesarias que no estén cubiertas en otro lugar
+        if (date == null || date.isBefore(LocalDateTime.now().minusYears(1))) {
+            throw new InvalidPairingArgsException("Tiempo de finalización inválido.");
         }
-        System.out.println("Mock: Emparejamiento finalizado correctamente para el usuario " + user.getUsername() +
-                " y el vehículo " + veh.getId() + ".");
+
+        if (dur <= 0) {
+            throw new InvalidPairingArgsException("La duración debe ser mayor a 0.");
+        }
+
+        if (dist <= 0) {
+            throw new InvalidPairingArgsException("La distancia debe ser mayor a 0.");
+        }
+
+        if (imp == null || imp.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidPairingArgsException("El importe debe ser mayor a 0.");
+        }
+
+        System.out.println("Mock: Emparejamiento finalizado correctamente.");
     }
+
 
     @Override
     public void setPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date) {

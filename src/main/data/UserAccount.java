@@ -2,6 +2,8 @@ package data;
 
 import exceptions.InvalidPairingArgsException;
 
+import java.util.Map;
+
 /**
  * Represents an immutable user account.
  */
@@ -51,4 +53,5 @@ public final class UserAccount {
     public String toString() {
         return "UserAccount {username='" + username + "'}";
     }
+
 }

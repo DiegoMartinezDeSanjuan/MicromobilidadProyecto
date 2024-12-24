@@ -16,7 +16,7 @@ public class JourneyService {
     private LocalTime initHour;
     private LocalDate endDate;
     private LocalTime endHour;
-    private float duration;
+    private int duration;
     private float distance;
     private float avgSpeed;
     private GeographicPoint originPoint;
@@ -58,11 +58,11 @@ public class JourneyService {
         this.endHour = endHour;
     }
 
-    public float getDuration() {
+    public int getDuration() {
         return duration;
     }
 
-    public void setDuration(float duration) {
+    public void setDuration(int duration) {
         this.duration = duration;
     }
 
