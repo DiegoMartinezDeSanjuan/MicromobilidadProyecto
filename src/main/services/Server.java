@@ -82,5 +82,25 @@ public interface Server {
      */
     void registerLocation(VehicleID veh, StationID st);
 
+    /**
+     * Registra un pago en el servidor.
+     *
+     * @param servID   ID del servicio asociado al pago.
+     * @param user     Cuenta de usuario que realiza el pago.
+     * @param imp      Importe del pago.
+     * @param payMeth  Método de pago (carácter que identifica el método).
+     * @throws ConnectException Si ocurre un problema de conexión al registrar el pago.
+     */
+    /**
+     * Registra un pago en el servidor.
+     *
+     * @param servID   ID del servicio asociado al pago.
+     * @param user     Cuenta de usuario que realiza el pago.
+     * @param imp      Importe del pago.
+     * @param payMeth  Método de pago (carácter que identifica el método).
+     * @throws ConnectException Si ocurre un problema de conexión al registrar el pago.
+     */
+    void registerPayment(ServiceID servID, UserAccount user, BigDecimal imp, char payMeth) throws ConnectException;
+
     PMVehicle getVehicleByID(VehicleID vhID) throws PMVNotAvailException;
 }

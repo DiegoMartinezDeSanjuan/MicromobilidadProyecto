@@ -1,6 +1,7 @@
 package micromobility;
 
 import data.GeographicPoint;
+import data.ServiceID;
 import data.StationID;
 import data.UserAccount;
 import micromobility.payment.Payment;
@@ -26,11 +27,14 @@ public class JourneyService {
     private List<Payment> paymentMethods;
     private UserAccount user;
     private StationID endStation;
+    private ServiceID serviceID;
+
 
     public JourneyService(GeographicPoint originPoint, LocalDate initDate, LocalTime initHour) {
         this.originPoint = originPoint;
         this.initDate = initDate;
         this.initHour = initHour;
+        this.serviceID = serviceID;
         this.inProgress = true;
     }
 
@@ -136,5 +140,9 @@ public class JourneyService {
 
     public void setPaymentMethods(List<Payment> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public ServiceID getServiceID() {
+        return serviceID;
     }
 }
