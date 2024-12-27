@@ -113,4 +113,34 @@ public class MockServer implements Server {
         System.out.println("Mock: Vehículo " + vhID.getId() + " añadido correctamente.");
     }
 
+    @Override
+    public void registerPayment(ServiceID servID, UserAccount user, BigDecimal imp, char payMeth) throws ConnectException {
+        if (servID == null || user == null || imp == null) {
+            throw new IllegalArgumentException("El ServiceID, UserAccount o el importe no pueden ser nulos.");
+        }
+        if (imp.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El importe debe ser mayor que 0.");
+        }
+        if (!isValidPayMethod(payMeth)) {
+            throw new IllegalArgumentException("Método de pago inválido.");
+        }
+
+        // Simulación de registro en el servidor
+        System.out.println("Registro del pago:");
+        System.out.println("ServiceID: " + servID.getId());
+        System.out.println("Usuario: " + user.getUsername());
+        System.out.println("Importe: " + imp);
+        System.out.println("Método de pago: " + payMeth);
+    }
+
+    /**
+     * Valida si el método de pago es válido.
+     *
+     * @param payMeth Método de pago a validar.
+     * @return True si el método de pago es válido, False en caso contrario.
+     */
+    private boolean isValidPayMethod(char payMeth) {
+        return payMeth == 'C' || payMeth == 'D' || payMeth == 'P' || payMeth == 'W';
+    }
+
 }

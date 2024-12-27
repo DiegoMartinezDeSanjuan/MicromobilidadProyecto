@@ -1,10 +1,10 @@
 package micromobility;
 
-import data.GeographicPoint;
-import data.StationID;
-import data.VehicleID;
+import data.*;
 import micromobility.PMVehicle;
 import exceptions.*;
+import micromobility.payment.Wallet;
+import mocks.MockWallet;
 import services.Server;
 import services.smartfeatures.ArduinoMicroController;
 import services.smartfeatures.QRDecoder;
@@ -28,6 +28,10 @@ public class JourneyRealizeHandler {
     private UnbondedBTSignal btSignal; // Nueva dependencia para manejar Bluetooth
     private JourneyService currentJourney;    // El servicio de trayecto actual
     private PMVehicle currentVehicle;       // Vehículo actual asignado
+    private Wallet wallet;
+    private UserAccount currentUser;
+    private ServiceID currentService;
+    private char selectedPaymentMethod;
 
     /**
      * Constructor de JourneyRealizeHandler.
@@ -352,5 +356,67 @@ public class JourneyRealizeHandler {
 
     public void setCurrentVehicle(PMVehicle currentVehicle) {
         this.currentVehicle = currentVehicle;
+    }
+
+    public void setWallet(Wallet wallet) {this.wallet = wallet; }
+
+    //Metodos Caso de Uso Opcional
+
+    /**
+     * Selecciona el método de pago.
+     *
+     * @param opt Método de pago escogido (C: tarjeta de crédito, D: tarjeta de débito, P: PayPal, W: monedero).
+     * @throws ProceduralException       Si no hay un usuario o un importe configurado.
+     * @throws NotEnoughWalletException Si no hay suficiente saldo en el monedero y se selecciona el método "W".
+     * @throws ConnectException          Si ocurre un problema de conexión al servidor.
+     */
+    public void selectPaymentMethod(char opt) throws ProceduralException, NotEnoughWalletException, ConnectException {
+        switch (opt) {
+            case 'W': // Monedero
+                if (wallet == null) {
+                    throw new ProceduralException("El monedero no está inicializado.");
+                }
+                BigDecimal importValue = currentJourney.getImportValue();
+                if (wallet.getBalance().compareTo(importValue) < 0) {
+                    throw new NotEnoughWalletException("Saldo insuficiente en el monedero.");
+                }
+                realizePayment(importValue);
+                break;
+
+            case 'C': // Tarjeta de crédito
+            case 'P': // PayPal
+            case 'T': // Transferencia bancaria
+                server.registerPayment(
+                        currentJourney.getServiceID(),
+                        currentJourney.getUser(), // Usar getUser desde JourneyService
+                        currentJourney.getImportValue(),
+                        opt
+                );
+                break;
+
+            default:
+                throw new ProceduralException("Método de pago no válido.");
+        }
+    }
+
+    /**
+     * Realiza el pago utilizando el monedero.
+     *
+     * @param imp Importe del pago.
+     * @throws NotEnoughWalletException Si no hay suficiente saldo en el monedero.
+     */
+    private void realizePayment(BigDecimal imp) throws NotEnoughWalletException {
+        wallet.deduct(imp);
+    }
+
+
+    /**
+     * Valida si la opción de pago es válida.
+     *
+     * @param opt Método de pago.
+     * @return True si el método es válido, False en caso contrario.
+     */
+    private boolean isValidPaymentOption(char opt) {
+        return opt == 'C' || opt == 'D' || opt == 'P' || opt == 'W';
     }
 }
