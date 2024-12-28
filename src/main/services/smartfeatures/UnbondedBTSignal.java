@@ -3,14 +3,15 @@ package services.smartfeatures;
 import exceptions.ConnectException;
 
 /**
- * External services involved in the functioning of some features.
+ * Interfaz que representa servicios externos relacionados con la transmisión de datos vía Bluetooth.
  */
 public interface UnbondedBTSignal {
 
     /**
-     * Broadcasts the station ID via Bluetooth continuously.
+     * Emite continuamente el ID de la estación a través del canal Bluetooth.
+     * Este método se utiliza para sincronizar información entre dispositivos cercanos.
      *
-     * @throws ConnectException If there is a failure in the Bluetooth connection.
+     * @throws ConnectException Si ocurre un fallo en la conexión Bluetooth.
      */
     void BTbroadcast() throws ConnectException;
 }

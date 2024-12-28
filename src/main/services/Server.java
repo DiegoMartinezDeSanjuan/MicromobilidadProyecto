@@ -9,98 +9,96 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * Interface defining the Server operations for vehicle pairing and management.
+ * Interfaz que define las operaciones del servidor para emparejamiento y gestión de vehículos.
  */
 public interface Server {
 
     /**
-     * Checks if a PMV (Personal Mobility Vehicle) is available.
+     * Verifica si un PMV (Vehículo de Movilidad Personal) está disponible.
      *
-     * @param vhID The VehicleID to check availability.
-     * @throws PMVNotAvailException If the vehicle is not available.
-     * @throws ConnectException     If there is an issue connecting to the server.
+     * @param vhID El identificador del vehículo a verificar.
+     * @throws PMVNotAvailException Si el vehículo no está disponible.
+     * @throws ConnectException     Si ocurre un problema de conexión con el servidor.
      */
     void checkPMVAvail(VehicleID vhID) throws PMVNotAvailException, ConnectException;
 
     /**
-     * Registers a pairing operation.
+     * Registra una operación de emparejamiento.
      *
-     * @param user The user account initiating the pairing.
-     * @param veh  The vehicle being paired.
-     * @param st   The station where the pairing happens.
-     * @param loc  The geographic location of the pairing.
-     * @param date The date and time of the pairing.
-     * @throws InvalidPairingArgsException If any arguments are invalid.
-     * @throws ConnectException            If there is an issue connecting to the server.
+     * @param user El usuario que inicia el emparejamiento.
+     * @param veh  El vehículo que se empareja.
+     * @param st   La estación donde ocurre el emparejamiento.
+     * @param loc  La ubicación geográfica del emparejamiento.
+     * @param date La fecha y hora del emparejamiento.
+     * @throws InvalidPairingArgsException Si alguno de los argumentos es inválido.
+     * @throws ConnectException            Si ocurre un problema de conexión con el servidor.
      */
     void registerPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date)
             throws InvalidPairingArgsException, ConnectException;
 
     /**
-     * Stops a pairing operation and logs additional information.
+     * Finaliza una operación de emparejamiento y registra información adicional.
      *
-     * @param user The user account ending the pairing.
-     * @param veh  The vehicle being unpaired.
-     * @param st   The station where the unpairing happens.
-     * @param loc  The geographic location of the unpairing.
-     * @param date The date and time of the unpairing.
-     * @param avSp The average speed during the journey.
-     * @param dist The distance covered during the journey.
-     * @param dur  The duration of the journey.
-     * @param imp  The final amount to be paid for the journey.
-     * @throws InvalidPairingArgsException If any arguments are invalid.
-     * @throws ConnectException            If there is an issue connecting to the server.
+     * @param user El usuario que finaliza el emparejamiento.
+     * @param veh  El vehículo que se desempareja.
+     * @param st   La estación donde ocurre el desemparejamiento.
+     * @param loc  La ubicación geográfica del desemparejamiento.
+     * @param date La fecha y hora del desemparejamiento.
+     * @param avSp La velocidad promedio durante el trayecto.
+     * @param dist La distancia recorrida durante el trayecto.
+     * @param dur  La duración del trayecto.
+     * @param imp  El importe final a pagar por el trayecto.
+     * @throws InvalidPairingArgsException Si alguno de los argumentos es inválido.
+     * @throws ConnectException            Si ocurre un problema de conexión con el servidor.
      */
     void stopPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date,
                      float avSp, float dist, int dur, BigDecimal imp)
             throws InvalidPairingArgsException, ConnectException;
 
     /**
-     * Sets a pairing operation for a user and vehicle.
+     * Configura una operación de emparejamiento para un usuario y un vehículo.
      *
-     * @param user The user account.
-     * @param veh  The vehicle being paired.
-     * @param st   The station where the pairing occurs.
-     * @param loc  The geographic location of the pairing.
-     * @param date The date and time of the pairing.
+     * @param user El usuario que realiza el emparejamiento.
+     * @param veh  El vehículo que se empareja.
+     * @param st   La estación donde ocurre el emparejamiento.
+     * @param loc  La ubicación geográfica del emparejamiento.
+     * @param date La fecha y hora del emparejamiento.
      */
     void setPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date);
 
     /**
-     * Unregisters a service related to a pairing operation.
+     * Desregistra un servicio relacionado con una operación de emparejamiento.
      *
-     * @param service The JourneyService to be unregistered.
-     * @throws PairingNotFoundException If the pairing was not found.
+     * @param service El servicio de trayecto a desregistrar.
+     * @throws PairingNotFoundException Si no se encuentra el emparejamiento relacionado.
      */
     void unPairRegisterService(JourneyService service) throws PairingNotFoundException;
 
     /**
-     * Registers the location of a vehicle.
+     * Registra la ubicación de un vehículo.
      *
-     * @param veh The vehicle whose location is being registered.
-     * @param st  The station where the vehicle is located.
+     * @param veh El vehículo cuya ubicación se registra.
+     * @param st  La estación donde se encuentra el vehículo.
      */
     void registerLocation(VehicleID veh, StationID st);
 
     /**
      * Registra un pago en el servidor.
      *
-     * @param servID   ID del servicio asociado al pago.
-     * @param user     Cuenta de usuario que realiza el pago.
-     * @param imp      Importe del pago.
-     * @param payMeth  Método de pago (carácter que identifica el método).
-     * @throws ConnectException Si ocurre un problema de conexión al registrar el pago.
-     */
-    /**
-     * Registra un pago en el servidor.
-     *
-     * @param servID   ID del servicio asociado al pago.
-     * @param user     Cuenta de usuario que realiza el pago.
-     * @param imp      Importe del pago.
-     * @param payMeth  Método de pago (carácter que identifica el método).
+     * @param servID  El ID del servicio asociado al pago.
+     * @param user    El usuario que realiza el pago.
+     * @param imp     El importe del pago.
+     * @param payMeth El método de pago (carácter que identifica el método).
      * @throws ConnectException Si ocurre un problema de conexión al registrar el pago.
      */
     void registerPayment(ServiceID servID, UserAccount user, BigDecimal imp, char payMeth) throws ConnectException;
 
+    /**
+     * Obtiene un vehículo basado en su identificador.
+     *
+     * @param vhID El identificador del vehículo.
+     * @return La instancia de PMVehicle correspondiente.
+     * @throws PMVNotAvailException Si el vehículo no se encuentra en el servidor.
+     */
     PMVehicle getVehicleByID(VehicleID vhID) throws PMVNotAvailException;
 }
