@@ -1,37 +1,48 @@
 package data;
 
 import exceptions.InvalidPairingArgsException;
+import java.util.Objects;
 
 /**
- * Represents an immutable identifier for a vehicle.
+ * Representa un identificador inmutable para un vehículo.
  */
 public final class VehicleID {
 
     private final String id;
 
     /**
-     * Constructor for VehicleID with validation.
+     * Constructor de VehicleID con validación.
      *
-     * @param id The vehicle identifier.
-     * @throws InvalidPairingArgsException Si id es null, vacio, or invalido.
+     * @param id El identificador del vehículo.
+     * @throws InvalidPairingArgsException Si el ID es nulo, vacío o no válido.
      */
     public VehicleID(String id) throws InvalidPairingArgsException {
-        if (id == null || id.isEmpty()) {
-            throw new InvalidPairingArgsException("VehicleID no puede ser nulo o estar vacío.");
-        }
-        if (!id.matches("[A-Za-z0-9]{5,15}")) {
-            throw new InvalidPairingArgsException("VehicleID debe contener entre 5 y 15 caracteres alfanuméricos.");
-        }
+        validarId(id);
         this.id = id;
     }
 
     /**
-     * Getter for the vehicle identifier.
+     * Obtiene el identificador del vehículo.
      *
-     * @return The vehicle identifier.
+     * @return El identificador del vehículo.
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * Valida el identificador del vehículo.
+     *
+     * @param id El identificador a validar.
+     * @throws InvalidPairingArgsException Si el ID no cumple con los requisitos.
+     */
+    private void validarId(String id) throws InvalidPairingArgsException {
+        if (id == null || id.isEmpty()) {
+            throw new InvalidPairingArgsException("El VehicleID no puede ser nulo o estar vacío.");
+        }
+        if (!id.matches("[A-Za-z0-9]{5,15}")) {
+            throw new InvalidPairingArgsException("El VehicleID debe contener entre 5 y 15 caracteres alfanuméricos.");
+        }
     }
 
     @Override
@@ -44,7 +55,7 @@ public final class VehicleID {
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return Objects.hash(id);
     }
 
     @Override
