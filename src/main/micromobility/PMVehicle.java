@@ -8,25 +8,35 @@ import data.VehicleID;
  */
 public class PMVehicle {
 
-    private VehicleID id;              // Identificador único del vehículo
-    private PMVState state;            // Estado actual del vehículo
-    private GeographicPoint location;  // Ubicación actual del vehículo
+    private final VehicleID id;              // Identificador único del vehículo
+    private PMVState state;                  // Estado actual del vehículo
+    private GeographicPoint location;        // Ubicación actual del vehículo
 
     /**
      * Constructor de PMVehicle.
      *
-     * @param id              Identificador del vehículo.
-     * @param initialState    El estado inicial del vehículo.
-     * @param initialLocation La ubicación inicial del vehículo.
+     * @param id              Identificador único del vehículo. No puede ser nulo.
+     * @param initialState    El estado inicial del vehículo. No puede ser nulo.
+     * @param initialLocation La ubicación inicial del vehículo. No puede ser nula.
+     * @throws IllegalArgumentException Si algún parámetro es nulo.
      */
     public PMVehicle(VehicleID id, PMVState initialState, GeographicPoint initialLocation) {
+        if (id == null) {
+            throw new IllegalArgumentException("El identificador del vehículo no puede ser nulo.");
+        }
+        if (initialState == null) {
+            throw new IllegalArgumentException("El estado inicial no puede ser nulo.");
+        }
+        if (initialLocation == null) {
+            throw new IllegalArgumentException("La ubicación inicial no puede ser nula.");
+        }
         this.id = id;
         this.state = initialState;
         this.location = initialLocation;
     }
 
     /**
-     * Obtiene el identificador del vehículo.
+     * Obtiene el identificador único del vehículo.
      *
      * @return El identificador del vehículo.
      */
@@ -76,9 +86,13 @@ public class PMVehicle {
     /**
      * Actualiza la ubicación del vehículo.
      *
-     * @param newLocation La nueva ubicación del vehículo.
+     * @param newLocation La nueva ubicación del vehículo. No puede ser nula.
+     * @throws IllegalArgumentException Si la nueva ubicación es nula.
      */
     public void setLocation(GeographicPoint newLocation) {
+        if (newLocation == null) {
+            throw new IllegalArgumentException("La nueva ubicación no puede ser nula.");
+        }
         this.location = newLocation;
     }
 
