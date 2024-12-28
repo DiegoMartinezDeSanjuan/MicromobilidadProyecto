@@ -29,16 +29,14 @@ public class MockServer implements Server {
         if (vehicle.getState() != PMVState.Available) {
             throw new PMVNotAvailException("El vehículo no está disponible.");
         }
-        System.out.println("Mock: El vehículo " + vhID.getId() + " está disponible.");
+        log("Mock: El vehículo " + vhID.getId() + " está disponible.");
     }
 
     @Override
     public void registerPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date)
             throws InvalidPairingArgsException, ConnectException {
-        if (user == null || veh == null || st == null || loc == null || date == null) {
-            throw new InvalidPairingArgsException("Argumentos inválidos para el emparejamiento.");
-        }
-        System.out.println("Mock: Emparejamiento registrado correctamente para el usuario " + user.getUsername() +
+        validarArgumentosEmparejamiento(user, veh, st, loc, date);
+        log("Mock: Emparejamiento registrado correctamente para el usuario " + user.getUsername() +
                 " y el vehículo " + veh.getId() + ".");
     }
 
@@ -46,31 +44,14 @@ public class MockServer implements Server {
     public void stopPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date,
                             float avSp, float dist, int dur, BigDecimal imp)
             throws InvalidPairingArgsException, ConnectException {
-
-        // Validaciones mínimas necesarias que no estén cubiertas en otro lugar
-        if (date == null || date.isBefore(LocalDateTime.now().minusYears(1))) {
-            throw new InvalidPairingArgsException("Tiempo de finalización inválido.");
-        }
-
-        if (dur <= 0) {
-            throw new InvalidPairingArgsException("La duración debe ser mayor a 0.");
-        }
-
-        if (dist <= 0) {
-            throw new InvalidPairingArgsException("La distancia debe ser mayor a 0.");
-        }
-
-        if (imp == null || imp.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new InvalidPairingArgsException("El importe debe ser mayor a 0.");
-        }
-
-        System.out.println("Mock: Emparejamiento finalizado correctamente.");
+        validarTiempoFinalizacion(date);
+        validarValoresTrayecto(dist, dur, imp);
+        log("Mock: Emparejamiento finalizado correctamente.");
     }
-
 
     @Override
     public void setPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date) {
-        System.out.println("Mock: Emparejamiento configurado para el usuario " + user.getUsername() +
+        log("Mock: Emparejamiento configurado para el usuario " + user.getUsername() +
                 " y el vehículo " + veh.getId() + ".");
     }
 
@@ -79,7 +60,7 @@ public class MockServer implements Server {
         if (service == null) {
             throw new PairingNotFoundException("El servicio no se encontró.");
         }
-        System.out.println("Mock: Servicio desvinculado correctamente.");
+        log("Mock: Servicio desvinculado correctamente.");
     }
 
     @Override
@@ -87,7 +68,7 @@ public class MockServer implements Server {
         if (veh == null || st == null) {
             throw new IllegalArgumentException("El vehículo o la estación son inválidos.");
         }
-        System.out.println("Mock: Ubicación del vehículo " + veh.getId() + " registrada en la estación " + st.getId() + ".");
+        log("Mock: Ubicación del vehículo " + veh.getId() + " registrada en la estación " + st.getId() + ".");
     }
 
     @Override
@@ -110,11 +91,45 @@ public class MockServer implements Server {
             throw new IllegalArgumentException("VehicleID o PMVehicle no pueden ser nulos.");
         }
         vehicles.put(vhID, vehicle);
-        System.out.println("Mock: Vehículo " + vhID.getId() + " añadido correctamente.");
+        log("Mock: Vehículo " + vhID.getId() + " añadido correctamente.");
     }
 
     @Override
     public void registerPayment(ServiceID servID, UserAccount user, BigDecimal imp, char payMeth) throws ConnectException {
+        validarArgumentosPago(servID, user, imp, payMeth);
+        log("Registro del pago:");
+        log("ServiceID: " + servID.getId());
+        log("Usuario: " + user.getUsername());
+        log("Importe: " + imp);
+        log("Método de pago: " + payMeth);
+    }
+
+    // Métodos privados de validación
+    private void validarArgumentosEmparejamiento(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date) {
+        if (user == null || veh == null || st == null || loc == null || date == null) {
+            throw new IllegalArgumentException("Argumentos inválidos para el emparejamiento.");
+        }
+    }
+
+    private void validarTiempoFinalizacion(LocalDateTime date) {
+        if (date == null || date.isBefore(LocalDateTime.now().minusYears(1))) {
+            throw new IllegalArgumentException("Tiempo de finalización inválido.");
+        }
+    }
+
+    private void validarValoresTrayecto(float dist, int dur, BigDecimal imp) {
+        if (dist <= 0) {
+            throw new IllegalArgumentException("La distancia debe ser mayor a 0.");
+        }
+        if (dur <= 0) {
+            throw new IllegalArgumentException("La duración debe ser mayor a 0.");
+        }
+        if (imp == null || imp.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El importe debe ser mayor a 0.");
+        }
+    }
+
+    private void validarArgumentosPago(ServiceID servID, UserAccount user, BigDecimal imp, char payMeth) {
         if (servID == null || user == null || imp == null) {
             throw new IllegalArgumentException("El ServiceID, UserAccount o el importe no pueden ser nulos.");
         }
@@ -124,23 +139,14 @@ public class MockServer implements Server {
         if (!isValidPayMethod(payMeth)) {
             throw new IllegalArgumentException("Método de pago inválido.");
         }
-
-        // Simulación de registro en el servidor
-        System.out.println("Registro del pago:");
-        System.out.println("ServiceID: " + servID.getId());
-        System.out.println("Usuario: " + user.getUsername());
-        System.out.println("Importe: " + imp);
-        System.out.println("Método de pago: " + payMeth);
     }
 
-    /**
-     * Valida si el método de pago es válido.
-     *
-     * @param payMeth Método de pago a validar.
-     * @return True si el método de pago es válido, False en caso contrario.
-     */
     private boolean isValidPayMethod(char payMeth) {
         return payMeth == 'C' || payMeth == 'D' || payMeth == 'P' || payMeth == 'W';
     }
 
+    // Método privado para manejar logs
+    private void log(String message) {
+        System.out.println(message);
+    }
 }
