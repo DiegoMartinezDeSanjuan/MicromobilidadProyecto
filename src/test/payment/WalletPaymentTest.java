@@ -1,5 +1,6 @@
 package payment;
 
+import data.GeographicPoint;
 import micromobility.payment.Wallet;
 import micromobility.payment.WalletPayment;
 import micromobility.JourneyService;
@@ -7,6 +8,8 @@ import data.UserAccount;
 import exceptions.InvalidPairingArgsException;
 import exceptions.NotEnoughWalletException;
 import org.junit.jupiter.api.Test;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import java.math.BigDecimal;
 
@@ -22,7 +25,8 @@ public class WalletPaymentTest {
         // Configuración
         Wallet wallet = new Wallet(new BigDecimal("100.00"));
         UserAccount user = new UserAccount("testUser");
-        JourneyService journey = new JourneyService(null, null, null);
+        GeographicPoint point = new GeographicPoint(41.3851f, 2.1734f);
+        JourneyService journey = new JourneyService(point, LocalDate.now(), LocalTime.now());
 
         WalletPayment payment = new WalletPayment(journey, user, new BigDecimal("50.00"), wallet);
 
@@ -38,7 +42,8 @@ public class WalletPaymentTest {
         // Configuración
         Wallet wallet = new Wallet(new BigDecimal("30.00"));
         UserAccount user = new UserAccount("testUser");
-        JourneyService journey = new JourneyService(null, null, null);
+        GeographicPoint point = new GeographicPoint(41.3851f, 2.1734f);
+        JourneyService journey = new JourneyService(point, LocalDate.now(), LocalTime.now());
 
         WalletPayment payment = new WalletPayment(journey, user, new BigDecimal("50.00"), wallet);
 
@@ -51,7 +56,8 @@ public class WalletPaymentTest {
         // Configuración
         Wallet wallet = null;
         UserAccount user = new UserAccount("testUser");
-        JourneyService journey = new JourneyService(null, null, null);
+        GeographicPoint point = new GeographicPoint(41.3851f, 2.1734f);
+        JourneyService journey = new JourneyService(point, LocalDate.now(), LocalTime.now());
 
         // Ejecución y Verificación
         assertThrows(IllegalArgumentException.class, () -> new WalletPayment(journey, user, new BigDecimal("50.00"), wallet), "Debería lanzar IllegalArgumentException cuando el monedero es nulo");
@@ -62,7 +68,8 @@ public class WalletPaymentTest {
         // Configuración
         Wallet wallet = new Wallet(new BigDecimal("100.00"));
         UserAccount user = new UserAccount("testUser");
-        JourneyService journey = new JourneyService(null, null, null);
+        GeographicPoint point = new GeographicPoint(41.3851f, 2.1734f);
+        JourneyService journey = new JourneyService(point, LocalDate.now(), LocalTime.now());
 
         // Ejecución y Verificación
         assertThrows(IllegalArgumentException.class, () -> new WalletPayment(journey, user, new BigDecimal("-50.00"), wallet), "Debería lanzar IllegalArgumentException para un importe negativo");

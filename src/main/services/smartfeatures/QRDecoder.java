@@ -7,18 +7,17 @@ import exceptions.InvalidPairingArgsException;
 import java.awt.image.BufferedImage;
 
 /**
- * Interface for decoding vehicle QR codes from images.
+ * Interfaz para decodificar códigos QR de vehículos a partir de imágenes.
  */
 public interface QRDecoder {
 
     /**
-     * Decodes a QR code from the provided image and returns the corresponding VehicleID.
+     * Decodifica un código QR a partir de la imagen proporcionada y devuelve el VehicleID correspondiente.
      *
-     * @param QRImg The image containing the QR code to be decoded.
-     * @return The decoded VehicleID.
-     * @throws CorruptedImgException       If the image is invalid or cannot be processed.
-     * @throws InvalidPairingArgsException If the QR code contains invalid pairing arguments.
+     * @param qrImg La imagen que contiene el código QR a decodificar. No puede ser nula.
+     * @return El VehicleID decodificado desde el código QR.
+     * @throws CorruptedImgException       Si la imagen es inválida o no puede ser procesada.
+     * @throws InvalidPairingArgsException Si el código QR contiene argumentos de emparejamiento inválidos.
      */
-    VehicleID getVehicleID(BufferedImage QRImg) throws CorruptedImgException, InvalidPairingArgsException;
+    VehicleID getVehicleID(BufferedImage qrImg) throws CorruptedImgException, InvalidPairingArgsException;
 }
-

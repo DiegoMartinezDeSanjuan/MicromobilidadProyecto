@@ -1,5 +1,6 @@
 package payment;
 
+import data.GeographicPoint;
 import micromobility.JourneyRealizeHandler;
 import micromobility.payment.Wallet;
 import micromobility.JourneyService;
@@ -10,6 +11,8 @@ import exceptions.ConnectException;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,7 +25,8 @@ public class JourneyRealizeHandlerOptionalMethodTest {
     void testSelectPaymentMethodWalletSuccess() throws InvalidPairingArgsException, ConnectException, ProceduralException {
         // Configuración
         Wallet wallet = new Wallet(new BigDecimal("100.00"));
-        JourneyService journey = new JourneyService(null, null, null);
+        GeographicPoint point = new GeographicPoint(41.3851f, 2.1734f);
+        JourneyService journey = new JourneyService(point, LocalDate.now(), LocalTime.now());
         journey.setImportValue(new BigDecimal("50.00"));
         JourneyRealizeHandler handler = new JourneyRealizeHandler(null, null, null, null);
 
@@ -49,7 +53,8 @@ public class JourneyRealizeHandlerOptionalMethodTest {
     void testSelectPaymentMethodInsufficientWalletFunds() throws InvalidPairingArgsException {
         // Configuración
         Wallet wallet = new Wallet(new BigDecimal("20.00"));
-        JourneyService journey = new JourneyService(null, null, null);
+        GeographicPoint point = new GeographicPoint(41.3851f, 2.1734f);
+        JourneyService journey = new JourneyService(point, LocalDate.now(), LocalTime.now());
         journey.setImportValue(new BigDecimal("50.00"));
         JourneyRealizeHandler handler = new JourneyRealizeHandler(null, null, null, null);
 

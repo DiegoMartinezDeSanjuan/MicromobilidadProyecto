@@ -5,38 +5,39 @@ import exceptions.PMVNotAvailException;
 import exceptions.ProceduralException;
 
 /**
- * Interface representing the Arduino software for vehicle microcontrollers.
- * Handles actions like start, stop, and managing the Bluetooth connection.
+ * Interfaz que representa el software del microcontrolador Arduino para vehículos.
+ * Maneja acciones como iniciar, detener y gestionar la conexión Bluetooth.
  */
 public interface ArduinoMicroController {
 
     /**
-     * Establishes the Bluetooth connection between the vehicle and the smartphone.
+     * Establece la conexión Bluetooth entre el vehículo y el smartphone.
      *
-     * @throws ConnectException If the Bluetooth connection fails.
+     * @throws ConnectException Si falla la conexión Bluetooth.
      */
     void setBTconnection() throws ConnectException;
 
     /**
-     * Represents the action of starting to drive the vehicle.
+     * Inicia el desplazamiento del vehículo.
      *
-     * @throws PMVNotAvailException If there is a physical issue preventing the vehicle from starting.
-     * @throws ConnectException If there is a Bluetooth connection failure.
-     * @throws ProceduralException If there is an unexpected issue in the process.
+     * @throws PMVNotAvailException Si hay un problema físico que impide que el vehículo arranque.
+     * @throws ConnectException Si ocurre un fallo en la conexión Bluetooth.
+     * @throws ProceduralException Si ocurre un problema inesperado en el proceso.
      */
     void startDriving() throws PMVNotAvailException, ConnectException, ProceduralException;
 
     /**
-     * Represents the action of stopping the vehicle by detecting continuous braking.
+     * Detiene el desplazamiento del vehículo, detectando frenadas continuas.
      *
-     * @throws PMVNotAvailException If there is a physical issue with the braking system.
-     * @throws ConnectException If there is a Bluetooth connection failure.
-     * @throws ProceduralException If there is an unexpected issue in the process.
+     * @throws PMVNotAvailException Si hay un problema físico con el sistema de frenos.
+     * @throws ConnectException Si ocurre un fallo en la conexión Bluetooth.
+     * @throws ProceduralException Si ocurre un problema inesperado en el proceso.
      */
     void stopDriving() throws PMVNotAvailException, ConnectException, ProceduralException;
 
     /**
-     * Undoes the Bluetooth connection between the vehicle and the smartphone.
+     * Finaliza la conexión Bluetooth entre el vehículo y el smartphone.
+     * Este método debe usarse al finalizar el trayecto o desconectar el sistema.
      */
     void undoBTconnection();
 }
