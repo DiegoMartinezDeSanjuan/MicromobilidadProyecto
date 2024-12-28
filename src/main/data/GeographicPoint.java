@@ -3,47 +3,72 @@ package data;
 import exceptions.InvalidPairingArgsException;
 
 /**
- * Essential data class representing a geographic point with latitude and longitude.
+ * Clase esencial que representa un punto geográfico con latitud y longitud.
  */
 public final class GeographicPoint {
+
+    private static final float MIN_LATITUDE = -90.0f;
+    private static final float MAX_LATITUDE = 90.0f;
+    private static final float MIN_LONGITUDE = -180.0f;
+    private static final float MAX_LONGITUDE = 180.0f;
 
     private final float latitude;
     private final float longitude;
 
     /**
-     * Constructor with validation for latitude and longitude.
+     * Constructor con validación para latitud y longitud.
      *
-     * @param lat Latitude in the range [-90, 90].
-     * @param lon Longitude in the range [-180, 180].
-     * @throws InvalidPairingArgsException If lat or lon are out of range.
+     * @param lat Latitud en el rango [-90, 90].
+     * @param lon Longitud en el rango [-180, 180].
+     * @throws InvalidPairingArgsException Si lat o lon están fuera de rango.
      */
     public GeographicPoint(float lat, float lon) throws InvalidPairingArgsException {
-        if (lat < -90 || lat > 90) {
-            throw new InvalidPairingArgsException("Latitude must be between -90 and 90 degrees.");
-        }
-        if (lon < -180 || lon > 180) {
-            throw new InvalidPairingArgsException("Longitude must be between -180 and 180 degrees.");
-        }
+        validarLatitud(lat);
+        validarLongitud(lon);
         this.latitude = lat;
         this.longitude = lon;
     }
 
     /**
-     * Getter for latitude.
+     * Getter para la latitud.
      *
-     * @return The latitude value.
+     * @return El valor de la latitud.
      */
     public float getLatitude() {
         return latitude;
     }
 
     /**
-     * Getter for longitude.
+     * Getter para la longitud.
      *
-     * @return The longitude value.
+     * @return El valor de la longitud.
      */
     public float getLongitude() {
         return longitude;
+    }
+
+    /**
+     * Valida el valor de la latitud.
+     *
+     * @param lat Latitud a validar.
+     * @throws InvalidPairingArgsException Si la latitud está fuera de rango.
+     */
+    private void validarLatitud(float lat) throws InvalidPairingArgsException {
+        if (lat < MIN_LATITUDE || lat > MAX_LATITUDE) {
+            throw new InvalidPairingArgsException("La latitud debe estar entre " + MIN_LATITUDE + " y " + MAX_LATITUDE + " grados.");
+        }
+    }
+
+    /**
+     * Valida el valor de la longitud.
+     *
+     * @param lon Longitud a validar.
+     * @throws InvalidPairingArgsException Si la longitud está fuera de rango.
+     */
+    private void validarLongitud(float lon) throws InvalidPairingArgsException {
+        if (lon < MIN_LONGITUDE || lon > MAX_LONGITUDE) {
+            throw new InvalidPairingArgsException("La longitud debe estar entre " + MIN_LONGITUDE + " y " + MAX_LONGITUDE + " grados.");
+        }
     }
 
     @Override
@@ -57,11 +82,7 @@ public final class GeographicPoint {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + Float.floatToIntBits(latitude);
-        result = prime * result + Float.floatToIntBits(longitude);
-        return result;
+        return java.util.Objects.hash(latitude, longitude);
     }
 
     @Override
